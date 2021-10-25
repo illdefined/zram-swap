@@ -1,0 +1,37 @@
+[Unit]
+Description=Compressed swap
+DefaultDependencies=no
+
+[Service]
+Type=oneshot
+RuntimeDirectory=zram-swap
+ExecStartPre=/bin/sh -c -e -u '\
+	pages="$$(getconf _PHYS_PAGES)"; \
+	pagesize="$$(getconf PAGESIZE)"; \
+	echo z3fold >/sys/module/zswap/parameters/zpool; \
+	dev="$$(cat /sys/class/zram-control/hot_add)"; \
+	echo "$$dev" >''$RUNTIME_DIRECTORY/device''; \
+	echo "$$((pages * 3 / 2 * pagesize))" >"/sys/block/zram$${dev}/disksize"; \
+	echo "$$((pages * 3 / 4 * pagesize))" >"/sys/block/zram$${dev}/mem_limit"; \
+	mkswap "/dev/zram$${dev}"'
+ExecStart=/bin/sh -c -e -u 'swapon --discard --priority 127 "/dev/zram$$(cat ''$RUNTIME_DIRECTORY/device'')"'
+ExecStop=/bin/sh -c -e -u 'swapoff "/dev/zram$$(cat ''$RUNTIME_DIRECTORY/device'')"'
+ExecStopPost=/bin/sh -c -e -u '\
+	test -s ''$RUNTIME_DIRECTORY/device'' || exit 0; \
+	dev="$$(cat ''$RUNTIME_DIRECTORY/device'')"; \
+	echo 1 >"/sys/block/zram$${dev}/reset"; \
+	echo "$$dev" >/sys/class/zram-control/hot_remove; \
+	rm -f -- ''$RUNTIME_DIRECTORY/device'''
+RemainAfterExit=yes
+
+ProtectSystem=strict
+ProtectHome=yes
+
+PrivateTmp=yes
+PrivateNetwork=yes
+
+CapabilityBoundingSet=CAP_DAC_OVERRIDE CAP_SYS_ADMIN
+SystemCallFilter=@system-service @swap
+
+[Install]
+WantedBy=swap.target
