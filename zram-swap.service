@@ -15,7 +15,7 @@ ExecStartPre=/bin/sh -c -e -u '\
 	echo "$$((pages * 3 / 2 * pagesize))" >"/sys/block/zram$${dev}/disksize"; \
 	echo "$$((pages * 3 / 4 * pagesize))" >"/sys/block/zram$${dev}/mem_limit"; \
 	mkswap "/dev/zram$${dev}"'
-ExecStart=/bin/sh -c -e -u 'swapon --discard --priority 127 "/dev/zram$$(cat ''$RUNTIME_DIRECTORY/device'')"'
+ExecStart=/bin/sh -c -e -u 'swapon --discard --priority 32767 "/dev/zram$$(cat ''$RUNTIME_DIRECTORY/device'')"'
 ExecStop=/bin/sh -c -e -u 'swapoff "/dev/zram$$(cat ''$RUNTIME_DIRECTORY/device'')"'
 ExecStopPost=/bin/sh -c -e -u '\
 	test -s ''$RUNTIME_DIRECTORY/device'' || exit 0; \
