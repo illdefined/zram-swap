@@ -8,7 +8,7 @@ RuntimeDirectory=zram-swap
 ExecStartPre=/bin/sh -c -e -u '\
 	pages="$$(getconf _PHYS_PAGES)"; \
 	pagesize="$$(getconf PAGESIZE)"; \
-	echo z3fold >/sys/module/zswap/parameters/zpool; \
+	echo zsmalloc >/sys/module/zswap/parameters/zpool; \
 	dev="$$(cat /sys/class/zram-control/hot_add)"; \
 	echo "$$dev" >''$RUNTIME_DIRECTORY/device''; \
 	echo "$$((pages * 3 / 2 * pagesize))" >"/sys/block/zram$${dev}/disksize"; \
