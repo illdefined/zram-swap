@@ -11,6 +11,7 @@ ExecStartPre=/bin/sh -c -e -u '\
 	echo zsmalloc >/sys/module/zswap/parameters/zpool; \
 	dev="$$(cat /sys/class/zram-control/hot_add)"; \
 	echo "$$dev" >''$RUNTIME_DIRECTORY/device''; \
+	echo zstd >"/sys/block/zram$${dev}/comp_algorithm"; \
 	echo "$$((pages * 3 / 2 * pagesize))" >"/sys/block/zram$${dev}/disksize"; \
 	echo "$$((pages * 3 / 4 * pagesize))" >"/sys/block/zram$${dev}/mem_limit"; \
 	mkswap "/dev/zram$${dev}"'
